@@ -15,6 +15,9 @@ export default function Home() {
   const [isPromptLoading, setIsPromptLoading] = useState(false);
   const [binaryFileUrl, setBinaryFileUrl] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string>('');
+  const [draggedImage, setDraggedImage] = useState<File | null>(null);
+  const [isImageAnalyzing, setIsImageAnalyzing] = useState(false);
+  const [imageDescription, setImageDescription] = useState<string>('');
 
   const handleLoad = async () => {
     setIsLoading(true);
@@ -104,6 +107,78 @@ export default function Home() {
     }
   };
 
+  const handleImageAnalysis = async (file: File) => {
+    setIsImageAnalyzing(true);
+    setErrorMessage(null);
+    setImageDescription('');
+    
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Remove data:image/...;base64, prefix
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      
+      reader.readAsDataURL(file);
+      const base64Data = await base64Promise;
+      
+      const res = await fetch(
+        "https://dvdbanky.app.n8n.cloud/webhook/2096f9d5-2efd-49a2-9d87-373ffc0ac2d5",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            image: base64Data,
+            filename: file.name,
+            mimeType: file.type
+          }),
+        }
+      );
+      
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+      }
+      
+      const description = await res.text();
+      setImageDescription(description);
+      
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setErrorMessage(message);
+    } finally {
+      setIsImageAnalyzing(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(file => file.type.startsWith('image/'));
+    
+    if (imageFile) {
+      setDraggedImage(imageFile);
+      handleImageAnalysis(imageFile);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setDraggedImage(file);
+      handleImageAnalysis(file);
+    }
+  };
+
   return (
     <div className="relative min-h-screen">
       {/* Galaxy background */}
@@ -179,6 +254,71 @@ export default function Home() {
                 
                 {/* Metric cards */}
                 <MetricCards data={chartData} hoveredData={hoveredData} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Image Analysis Panel */}
+        <div className="w-full max-w-4xl">
+          <div className="bg-black/20 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
+            <h2 className="text-xl font-semibold mb-6 text-white text-center" style={{color: '#ffffff'}}>Анализ Изображений</h2>
+            
+            {/* Drag and drop area */}
+            <div 
+              className="border-2 border-dashed border-gray-500 rounded-lg p-8 text-center mb-6 transition-colors hover:border-gray-400"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <div>
+                  <p className="text-white mb-2">Перетащите изображение сюда или</p>
+                  <label className="cursor-pointer">
+                    <span className="text-orange-400 hover:text-orange-300 underline">выберите файл</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileSelect}
+                      className="hidden" 
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Loading state */}
+            {isImageAnalyzing && (
+              <div className="flex justify-center items-center py-8">
+                <div className="flex items-center gap-3">
+                  <svg className="h-6 w-6 animate-spin text-orange-400" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  <span className="text-white">Анализ изображения...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Image preview and description */}
+            {draggedImage && (
+              <div className="space-y-6">
+                <div className="flex justify-center">
+                  <img 
+                    src={URL.createObjectURL(draggedImage)} 
+                    alt="Uploaded image" 
+                    className="max-w-full max-h-64 rounded-lg shadow-lg border border-gray-600"
+                  />
+                </div>
+                
+                {imageDescription && (
+                  <div className="bg-black/30 backdrop-blur-md p-4 rounded-lg border border-gray-500">
+                    <h3 className="text-lg font-semibold mb-3 text-white" style={{color: '#ffffff'}}>Описание:</h3>
+                    <p className="text-white leading-relaxed" style={{color: '#ffffff'}}>{imageDescription}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -411,9 +551,9 @@ function ChartView({ data, chartType, onHover }: {
   chartType: 'line' | 'bar',
   onHover: (data: Record<string, any> | null) => void 
 }) {
-  const padding = { top: 80, right: 120, bottom: 80, left: 80 };
-  const width = 800;
-  const height = 400;
+  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const width = 600;
+  const height = 350;
 
   // Process population data for visualization
   const allKeys = new Set<string>();
@@ -516,9 +656,10 @@ function ChartView({ data, chartType, onHover }: {
   };
 
   return (
-    <div className="w-full bg-gray-50 p-6 rounded-lg">
+    <div className="w-full bg-gray-50 p-1 rounded-lg overflow-hidden">
       <div className="mb-4">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{height: '512px'}}>
+        <div className="w-full overflow-x-auto">
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-full" style={{height: 'auto', maxHeight: '400px'}}>
           <style>
             {`
               .chart-grid { 
@@ -838,10 +979,11 @@ function ChartView({ data, chartType, onHover }: {
               })}
             </>
           )}
-        </svg>
+          </svg>
+        </div>
         
         {/* Legend */}
-        <div className="flex justify-center gap-8 -mt-6">
+        <div className="flex justify-center gap-8 mt-4">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
             <span className="text-gray-700 text-sm">Население Индии</span>
