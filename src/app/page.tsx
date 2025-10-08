@@ -120,120 +120,135 @@ export default function Home() {
       </div>
       
       {/* Main content */}
-      <main className="relative z-10 min-h-screen flex flex-col items-center justify-start p-8 gap-4 pt-16">
-      <h1 className="text-3xl font-bold text-gray-100 drop-shadow-lg" style={{color: '#f8fafc'}}>УЧЕБНЫЙ ПРОЕКТ</h1>
-      <Button type="warning" size="large" onClick={handleToggleChart} disabled={isLoading} auto style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}>
-        {isLoading ? (
-          <span className="flex items-center gap-2">
-            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-            Загрузка...
-          </span>
-        ) : chartData.length > 0 ? (
-          "Скрыть график"
-        ) : (
-          "Загрузить график"
-        )}
-      </Button>
-
-      {chartData.length > 0 && (
-        <div className="w-full max-w-6xl mt-4">
-          {/* Chart controls */}
-          <div className="flex justify-center gap-4 mb-6">
-            <Button 
-              type="secondary" 
-              auto 
-              onClick={handleLoad}
-              disabled={isLoading}
-            >
-              Обновить
-            </Button>
-            <Button 
-              type={chartType === 'line' ? 'success' : 'secondary'} 
-              auto 
-              onClick={() => setChartType('line')}
-            >
-              Линейный график
-            </Button>
-            <Button 
-              type={chartType === 'bar' ? 'success' : 'secondary'} 
-              auto 
-              onClick={() => setChartType('bar')}
-            >
-              Столбчатая диаграмма
-            </Button>
-          </div>
-          
-          {/* Chart */}
-          <ChartView data={chartData} chartType={chartType} onHover={setHoveredData} />
-          
-          {/* Metric cards */}
-          <MetricCards data={chartData} hoveredData={hoveredData} />
-        </div>
-      )}
-      {errorMessage && (
-        <p className="text-red-400 mt-4 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-lg">Ошибка: {errorMessage}</p>
-      )}
-
-      {/* Prompt input section */}
-      <div className="w-full max-w-2xl mt-8 flex flex-col items-center gap-4">
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Введите ваш промпт здесь..."
-          className="w-full h-32 p-4 border border-gray-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-black/20 backdrop-blur-sm text-white placeholder-gray-400"
-          style={{color: '#ffffff'}}
-          disabled={isPromptLoading}
-        />
-        <Button 
-          type="warning" 
-          size="large" 
-          onClick={handlePromptSubmit} 
-          disabled={isPromptLoading || !prompt.trim()} 
-          auto
-          style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}
-        >
-          {isPromptLoading ? (
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-              </svg>
-              Обработка...
-            </span>
-          ) : (
-            "Отправить промпт"
-          )}
-        </Button>
-      </div>
-
-      {/* Binary file display */}
-      {binaryFileUrl && (
-        <div className="w-full max-w-4xl mt-8">
+      <main className="relative z-10 min-h-screen flex flex-col items-center justify-start p-8 gap-8 pt-16">
+        <h1 className="text-3xl font-bold text-white drop-shadow-lg" style={{color: '#f8fafc'}}>УЧЕБНЫЙ ПРОЕКТ</h1>
+        
+        {/* Графики и Аналитика панель */}
+        <div className="w-full max-w-4xl">
           <div className="bg-black/30 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
-            <h3 className="text-lg font-semibold mb-4 text-gray-300">Результат:</h3>
-            <div className="flex justify-center">
-              <img 
-                src={binaryFileUrl} 
-                alt="Generated content" 
-                className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600"
-                onLoad={() => console.log('Image loaded successfully')}
-                onError={() => {
-                  console.error('Failed to load image');
-                  setErrorMessage('Не удалось загрузить изображение');
-                }}
-              />
+            <h2 className="text-xl font-semibold mb-6 text-white text-center" style={{color: '#ffffff'}}>Графики и Аналитика</h2>
+            
+            <div className="flex justify-center mb-6">
+              <Button type="warning" size="large" onClick={handleToggleChart} disabled={isLoading} auto style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}>
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    Загрузка...
+                  </span>
+                ) : chartData.length > 0 ? (
+                  "Скрыть график"
+                ) : (
+                  "Загрузить график"
+                )}
+              </Button>
             </div>
-            {lastPrompt && (
-              <div className="mt-4 text-center">
-                <p className="text-white text-sm" style={{color: '#ffffff'}}>Промпт: {lastPrompt}</p>
+
+            {chartData.length > 0 && (
+              <div className="w-full">
+                {/* Chart controls */}
+                <div className="flex justify-center gap-4 mb-6">
+                  <Button 
+                    type="secondary" 
+                    auto 
+                    onClick={handleLoad}
+                    disabled={isLoading}
+                  >
+                    Обновить
+                  </Button>
+                  <Button 
+                    type={chartType === 'line' ? 'success' : 'secondary'} 
+                    auto 
+                    onClick={() => setChartType('line')}
+                  >
+                    Линейный график
+                  </Button>
+                  <Button 
+                    type={chartType === 'bar' ? 'success' : 'secondary'} 
+                    auto 
+                    onClick={() => setChartType('bar')}
+                  >
+                    Столбчатая диаграмма
+                  </Button>
+                </div>
+                
+                {/* Chart */}
+                <ChartView data={chartData} chartType={chartType} onHover={setHoveredData} />
+                
+                {/* Metric cards */}
+                <MetricCards data={chartData} hoveredData={hoveredData} />
               </div>
             )}
           </div>
         </div>
-      )}
+
+        {/* Генерация Изображений панель */}
+        <div className="w-full max-w-4xl">
+          <div className="bg-black/30 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
+            <h2 className="text-xl font-semibold mb-6 text-white text-center" style={{color: '#ffffff'}}>Генерация Изображений</h2>
+            
+            <div className="flex flex-col items-center gap-4">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Введите ваш промпт здесь..."
+                className="w-full h-32 p-4 border border-gray-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-black/20 backdrop-blur-sm text-white placeholder-gray-400"
+                style={{color: '#ffffff'}}
+                disabled={isPromptLoading}
+              />
+              <Button 
+                type="warning" 
+                size="large" 
+                onClick={handlePromptSubmit} 
+                disabled={isPromptLoading || !prompt.trim()} 
+                auto
+                style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}
+              >
+                {isPromptLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    Обработка...
+                  </span>
+                ) : (
+                  "Отправить промпт"
+                )}
+              </Button>
+            </div>
+
+            {/* Binary file display */}
+            {binaryFileUrl && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4 text-white text-center" style={{color: '#ffffff'}}>Результат:</h3>
+                <div className="flex justify-center">
+                  <img 
+                    src={binaryFileUrl} 
+                    alt="Generated content" 
+                    className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600"
+                    onLoad={() => console.log('Image loaded successfully')}
+                    onError={() => {
+                      console.error('Failed to load image');
+                      setErrorMessage('Не удалось загрузить изображение');
+                    }}
+                  />
+                </div>
+                {lastPrompt && (
+                  <div className="mt-4 text-center">
+                    <p className="text-white text-sm" style={{color: '#ffffff'}}>Промпт: {lastPrompt}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {errorMessage && (
+          <p className="text-red-400 mt-4 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-lg">Ошибка: {errorMessage}</p>
+        )}
       </main>
     </div>
   );
