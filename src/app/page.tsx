@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@geist-ui/core";
 import { useState } from "react";
+import Galaxy from "../components/Galaxy";
 // Using a lightweight custom SVG chart to avoid any library compatibility issues
 
 export default function Home() {
@@ -104,9 +105,24 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start p-8 gap-4 pt-16">
-      <h1 className="text-3xl font-bold">УЧЕБНЫЙ ПРОЕКТ</h1>
-      <Button type="warning" size="large" onClick={handleToggleChart} disabled={isLoading} auto>
+    <div className="relative min-h-screen">
+      {/* Galaxy background */}
+      <div className="fixed inset-0 z-0">
+        <Galaxy 
+          mouseRepulsion={true}
+          mouseInteraction={true}
+          density={1.5}
+          glowIntensity={0.3}
+          saturation={0.0}
+          hueShift={140}
+          transparent={false}
+        />
+      </div>
+      
+      {/* Main content */}
+      <main className="relative z-10 min-h-screen flex flex-col items-center justify-start p-8 gap-4 pt-16">
+      <h1 className="text-3xl font-bold text-gray-100 drop-shadow-lg" style={{color: '#f8fafc'}}>УЧЕБНЫЙ ПРОЕКТ</h1>
+      <Button type="warning" size="large" onClick={handleToggleChart} disabled={isLoading} auto style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}>
         {isLoading ? (
           <span className="flex items-center gap-2">
             <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -158,7 +174,7 @@ export default function Home() {
         </div>
       )}
       {errorMessage && (
-        <p className="text-red-600 mt-4">Ошибка: {errorMessage}</p>
+        <p className="text-red-400 mt-4 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-lg">Ошибка: {errorMessage}</p>
       )}
 
       {/* Prompt input section */}
@@ -167,7 +183,8 @@ export default function Home() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Введите ваш промпт здесь..."
-          className="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full h-32 p-4 border border-gray-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-black/20 backdrop-blur-sm text-white placeholder-gray-400"
+          style={{color: '#ffffff'}}
           disabled={isPromptLoading}
         />
         <Button 
@@ -176,6 +193,7 @@ export default function Home() {
           onClick={handlePromptSubmit} 
           disabled={isPromptLoading || !prompt.trim()} 
           auto
+          style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}
         >
           {isPromptLoading ? (
             <span className="flex items-center gap-2">
@@ -194,13 +212,13 @@ export default function Home() {
       {/* Binary file display */}
       {binaryFileUrl && (
         <div className="w-full max-w-4xl mt-8">
-          <div className="bg-white p-6 rounded-lg shadow-md border">
-            <h3 className="text-lg font-semibold mb-4">Результат:</h3>
+          <div className="bg-black/30 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
+            <h3 className="text-lg font-semibold mb-4 text-gray-300">Результат:</h3>
             <div className="flex justify-center">
               <img 
                 src={binaryFileUrl} 
                 alt="Generated content" 
-                className="max-w-full h-auto rounded-lg shadow-sm"
+                className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600"
                 onLoad={() => console.log('Image loaded successfully')}
                 onError={() => {
                   console.error('Failed to load image');
@@ -210,13 +228,14 @@ export default function Home() {
             </div>
             {lastPrompt && (
               <div className="mt-4 text-center">
-                <p className="text-gray-600 text-sm">Промпт: {lastPrompt}</p>
+                <p className="text-white text-sm" style={{color: '#ffffff'}}>Промпт: {lastPrompt}</p>
               </div>
             )}
           </div>
         </div>
       )}
       </main>
+    </div>
   );
 }
 
