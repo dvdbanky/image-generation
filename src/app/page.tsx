@@ -275,9 +275,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <div>
-                  <p className="text-white mb-2">Перетащите изображение сюда или</p>
+                  <p className="text-gray-400 mb-2" style={{color: '#9ca3af'}}>Перетащите изображение сюда или</p>
                   <label className="cursor-pointer">
-                    <span className="text-orange-400 hover:text-orange-300 underline">выберите файл</span>
+                    <span className="text-gray-400 hover:text-gray-300 underline" style={{color: '#9ca3af'}}>выберите файл</span>
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -297,7 +297,7 @@ export default function Home() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                   </svg>
-                  <span className="text-white">Анализ изображения...</span>
+                  <span className="text-gray-400" style={{color: '#9ca3af'}}>Анализ изображения...</span>
                 </div>
               </div>
             )}
