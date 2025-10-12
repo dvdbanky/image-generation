@@ -227,8 +227,6 @@ export default function Galaxy({
         gl.canvas.width / gl.canvas.height
       );
     }
-    window.addEventListener('resize', resize, false);
-    resize();
 
     const geometry = new Triangle(gl);
     const program = new Program(gl, {
@@ -261,7 +259,10 @@ export default function Galaxy({
     });
 
     const mesh = new Mesh(gl, { geometry, program });
-    let animateId;
+    let animateId: number;
+
+    window.addEventListener('resize', resize, false);
+    resize();
 
     function update(t) {
       animateId = requestAnimationFrame(update);

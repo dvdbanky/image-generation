@@ -545,6 +545,7 @@ function mapYearPopulation(input: unknown): Array<Record<string, unknown>> {
   });
 
   // Sort by year in ascending order
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sorted = mappedData.sort((a, b) => a.sortValue - b.sortValue).map(({ sortValue: _, ...rest }) => rest);
   return sorted;
 }
