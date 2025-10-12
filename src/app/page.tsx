@@ -2,15 +2,15 @@
 import { Button } from "@geist-ui/core";
 import { useState } from "react";
 import Galaxy from "../components/Galaxy";
+import Image from "next/image";
 // Using a lightweight custom SVG chart to avoid any library compatibility issues
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [responseData, setResponseData] = useState<unknown>(null);
-  const [chartData, setChartData] = useState<Array<Record<string, any>>>([]);
+  const [chartData, setChartData] = useState<Array<Record<string, unknown>>>([]);
   const [chartType, setChartType] = useState<'line' | 'bar'>('line');
-  const [hoveredData, setHoveredData] = useState<Record<string, any> | null>(null);
+  const [hoveredData, setHoveredData] = useState<Record<string, unknown> | null>(null);
   const [prompt, setPrompt] = useState<string>('');
   const [isPromptLoading, setIsPromptLoading] = useState(false);
   const [binaryFileUrl, setBinaryFileUrl] = useState<string | null>(null);
@@ -38,17 +38,14 @@ export default function Home() {
       const text = await res.text();
       try {
         const parsed = JSON.parse(text);
-        setResponseData(parsed);
         const direct = mapYearPopulation(parsed);
         setChartData(direct.length ? direct : normalizeForChart(parsed));
       } catch {
-        setResponseData(text);
         setChartData([]);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setErrorMessage(message);
-      setResponseData(null);
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +55,6 @@ export default function Home() {
     if (chartData.length > 0) {
       // Hide chart
       setChartData([]);
-      setResponseData(null);
       setErrorMessage(null);
     } else {
       // Load chart
@@ -198,10 +194,10 @@ export default function Home() {
       <main className="relative z-10 min-h-screen flex flex-col items-center justify-start p-8 gap-8 pt-16">
         <h1 className="text-3xl font-bold text-white drop-shadow-lg" style={{color: '#f8fafc'}}>УЧЕБНЫЙ ПРОЕКТ</h1>
         
-        {/* Графики и Аналитика панель */}
+        {/* Charts Panel */}
         <div className="w-full max-w-4xl">
-          <div className="bg-black/30 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
-            <h2 className="text-xl font-semibold mb-6 text-white text-center" style={{color: '#ffffff'}}>Графики и Аналитика</h2>
+          <div className="bg-black/20 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
+            <h2 className="text-xl font-semibold mb-4 text-white text-center" style={{color: '#ffffff'}}>Графики и Аналитика</h2>
             
             <div className="flex justify-center mb-6">
               <Button type="warning" size="large" onClick={handleToggleChart} disabled={isLoading} auto style={{backgroundColor: '#f8f9fa', color: '#495057', border: '1px solid #dee2e6'}}>
@@ -306,10 +302,12 @@ export default function Home() {
             {draggedImage && (
               <div className="space-y-6">
                 <div className="flex justify-center">
-                  <img 
+                  <Image 
                     src={URL.createObjectURL(draggedImage)} 
                     alt="Uploaded image" 
-                    className="max-w-full max-h-64 rounded-lg shadow-lg border border-gray-600"
+                    width={500}
+                    height={256}
+                    className="max-w-full max-h-64 rounded-lg shadow-lg border border-gray-600 object-contain"
                   />
                 </div>
                 
@@ -324,12 +322,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Генерация Изображений панель */}
+        {/* Image Generation Panel */}
         <div className="w-full max-w-4xl">
-          <div className="bg-black/30 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
+          <div className="bg-black/20 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-600">
             <h2 className="text-xl font-semibold mb-6 text-white text-center" style={{color: '#ffffff'}}>Генерация Изображений</h2>
             
-            <div className="flex flex-col items-center gap-4">
+            {/* Prompt input section */}
+            <div className="flex flex-col items-center gap-4 mb-6">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -362,25 +361,29 @@ export default function Home() {
 
             {/* Binary file display */}
             {binaryFileUrl && (
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4 text-white text-center" style={{color: '#ffffff'}}>Результат:</h3>
-                <div className="flex justify-center">
-                  <img 
-                    src={binaryFileUrl} 
-                    alt="Generated content" 
-                    className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600"
-                    onLoad={() => console.log('Image loaded successfully')}
-                    onError={() => {
-                      console.error('Failed to load image');
-                      setErrorMessage('Не удалось загрузить изображение');
-                    }}
-                  />
-                </div>
-                {lastPrompt && (
-                  <div className="mt-4 text-center">
-                    <p className="text-white text-sm" style={{color: '#ffffff'}}>Промпт: {lastPrompt}</p>
+              <div className="w-full">
+                <div className="bg-black/30 backdrop-blur-md p-6 rounded-lg shadow-lg border border-gray-500">
+                  <h3 className="text-lg font-semibold mb-4 text-white" style={{color: '#ffffff'}}>Результат:</h3>
+                  <div className="flex justify-center">
+                    <Image 
+                      src={binaryFileUrl} 
+                      alt="Generated content" 
+                      width={800}
+                      height={600}
+                      className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600"
+                      onLoad={() => console.log('Image loaded successfully')}
+                      onError={() => {
+                        console.error('Failed to load image');
+                        setErrorMessage('Не удалось загрузить изображение');
+                      }}
+                    />
                   </div>
-                )}
+                  {lastPrompt && (
+                    <div className="mt-4 text-center">
+                      <p className="text-white text-sm" style={{color: '#ffffff'}}>Промпт: {lastPrompt}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -542,7 +545,7 @@ function mapYearPopulation(input: unknown): Array<Record<string, unknown>> {
   });
 
   // Sort by year in ascending order
-  const sorted = mappedData.sort((a, b) => a._sortValue - b._sortValue).map(({ _sortValue, ...rest }) => rest);
+  const sorted = mappedData.sort((a, b) => a._sortValue - b._sortValue).map(({ _sortValue: _, ...rest }) => rest);
   return sorted;
 }
 
@@ -1054,4 +1057,3 @@ function MetricCards({ data, hoveredData }: { data: Array<Record<string, unknown
     </div>
   );
 }
-
