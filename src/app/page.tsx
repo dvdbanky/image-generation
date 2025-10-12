@@ -545,7 +545,7 @@ function mapYearPopulation(input: unknown): Array<Record<string, unknown>> {
   });
 
   // Sort by year in ascending order
-  const sorted = mappedData.sort((a, b) => a._sortValue - b._sortValue).map(({ _sortValue: _, ...rest }) => rest);
+  const sorted = mappedData.sort((a, b) => a._sortValue - b._sortValue).map(({ _sortValue, ...rest }) => rest);
   return sorted;
 }
 
