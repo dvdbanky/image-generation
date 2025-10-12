@@ -180,12 +180,12 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-black">
       {/* Galaxy background */}
       <div className="fixed inset-0 z-0">
         <Galaxy 
-          mouseRepulsion={true}
-          mouseInteraction={true}
+          mouseRepulsion={false}
+          mouseInteraction={false}
           density={1.5}
           glowIntensity={0.3}
           saturation={0.0}
@@ -395,7 +395,7 @@ export default function Home() {
 }
 
 // Heuristic normalization to chart-friendly format
-function normalizeForChart(input: unknown): Array<Record<string, any>> {
+function normalizeForChart(input: unknown): Array<Record<string, unknown>> {
   const isNumericLike = (v: unknown) => {
     if (typeof v === "number" && Number.isFinite(v)) return true;
     if (typeof v === "string" && v.trim() !== "" && !isNaN(Number(v))) return true;
@@ -407,30 +407,30 @@ function normalizeForChart(input: unknown): Array<Record<string, any>> {
       if (input.length === 0) return [];
       // Case: array of arrays. Support headers in first row or positional indices
       if (Array.isArray(input[0])) {
-        const rows = input as any[] as any[][];
+        const rows = input as unknown[][];
         const firstRow = rows[0];
         const headerLike = firstRow.every((c) => typeof c === "string");
         if (headerLike && rows.length > 1) {
           const headers = firstRow as string[];
           const xIdx = Math.max(0, headers.findIndex((h) => /month|date|name|label/i.test(h)));
           const yIdxs = headers
-            .map((h, i) => [h, i] as const)
-            .filter(([h, i]) => i !== xIdx)
-            .map(([_, i]) => i);
-          return rows.slice(1).map((r, i) => {
-            const obj: Record<string, any> = { name: String(r[xIdx] ?? i + 1) };
-            yIdxs.forEach((idx) => {
-              const key = headers[idx] ?? `value${idx}`;
-              const val = r[idx];
+            .map((h, idx) => [h, idx] as const)
+            .filter(([, idx]) => idx !== xIdx)
+            .map(([, idx]) => idx);
+          return rows.slice(1).map((r, idx) => {
+            const obj: Record<string, unknown> = { name: String(r[xIdx] ?? idx + 1) };
+            yIdxs.forEach((index) => {
+              const key = headers[index] ?? `value${index}`;
+              const val = r[index];
               if (isNumericLike(val)) obj[key] = toNumber(val);
             });
             return obj;
           });
         } else {
           // Positional: [x, y1, y2]
-          return rows.map((r, i) => {
-            const name = r[0] ?? i + 1;
-            const obj: Record<string, any> = { name: String(name) };
+          return rows.map((r, idx) => {
+            const name = r[0] ?? idx + 1;
+            const obj: Record<string, unknown> = { name: String(name) };
             if (isNumericLike(r[1])) obj.value = toNumber(r[1]);
             if (isNumericLike(r[2])) obj.value2 = toNumber(r[2]);
             return obj;
@@ -438,16 +438,16 @@ function normalizeForChart(input: unknown): Array<Record<string, any>> {
         }
       }
       if (input.every((x) => typeof x === "number" || isNumericLike(x))) {
-        return (input as any[]).map((v, i) => ({ name: `${i + 1}`, value: toNumber(v) }));
+        return (input as unknown[]).map((v, idx) => ({ name: `${idx + 1}`, value: toNumber(v) }));
       }
       if (input.every((x) => x && typeof x === "object")) {
-        const first = input[0] as Record<string, any>;
+        const first = input[0] as Record<string, unknown>;
         const keys = Object.keys(first);
         // Special-case: Month + Profit shape
         if (keys.includes("Month") && keys.some((k) => /profit/i.test(k))) {
           const profitKey = keys.find((k) => /profit/i.test(k)) as string;
-          return (input as Record<string, any>[]).map((row, i) => ({
-            name: String(row["Month"] ?? `${i + 1}`),
+          return (input as Record<string, unknown>[]).map((row, idx) => ({
+            name: String(row["Month"] ?? `${idx + 1}`),
             Profit: toNumber(row[profitKey]),
           }));
         }
@@ -456,8 +456,8 @@ function normalizeForChart(input: unknown): Array<Record<string, any>> {
           keys.find((k) => /month|date|name|label/i.test(k)) ||
           "name";
         const yKeys = keys.filter((k) => isNumericLike(first[k]));
-        return (input as Record<string, any>[]).map((row, i) => {
-          const base: Record<string, any> = { name: row[xKey] ?? `${i + 1}` };
+        return (input as Record<string, unknown>[]).map((row, idx) => {
+          const base: Record<string, unknown> = { name: row[xKey] ?? `${idx + 1}` };
           yKeys.forEach((k) => {
             base[k] = toNumber(row[k]);
           });
@@ -466,12 +466,12 @@ function normalizeForChart(input: unknown): Array<Record<string, any>> {
       }
     }
     if (input && typeof input === "object") {
-      const obj: any = input;
+      const obj = input as Record<string, unknown>;
       const maybe = obj.data ?? obj.items ?? obj.series ?? obj.points ?? obj.values;
       if (Array.isArray(maybe)) return normalizeForChart(maybe);
       // Also accept keyed series: { Jan: 10, Feb: 20 }
       const entries = Object.entries(obj);
-      if (entries.every(([k, v]) => isNumericLike(v))) {
+      if (entries.every(([, v]) => isNumericLike(v))) {
         return entries.map(([k, v]) => ({ name: k, value: toNumber(v) }));
       }
     }
@@ -480,14 +480,14 @@ function normalizeForChart(input: unknown): Array<Record<string, any>> {
       const lines = input.trim().split(/\r?\n/).filter(Boolean);
       if (lines.length) {
         const rows = lines.map((l) => l.split(/[,;\t]/));
-        return normalizeForChart(rows as any);
+        return normalizeForChart(rows);
       }
     }
     // Fallback: extract all numbers from arbitrary string
     if (typeof input === "string") {
       const nums = (input.match(/-?\d+(?:\.\d+)?/g) || []).map(Number).filter((n) => Number.isFinite(n));
       if (nums.length) {
-        return nums.map((v, i) => ({ name: `${i + 1}`, value: v }));
+        return nums.map((v, idx) => ({ name: `${idx + 1}`, value: v }));
       }
     }
   } catch {
@@ -496,16 +496,16 @@ function normalizeForChart(input: unknown): Array<Record<string, any>> {
   return [];
 }
 
-function mapYearPopulation(input: unknown): Array<Record<string, any>> {
+function mapYearPopulation(input: unknown): Array<Record<string, unknown>> {
   if (!Array.isArray(input)) return [];
   if (input.length === 0) return [];
-  const first = input[0] as any;
+  const first = input[0] as Record<string, unknown>;
   if (!first || typeof first !== "object") return [];
   
   const keys = Object.keys(first);
   
   // Helper function to parse numbers from strings with commas
-  const parseNumber = (value: any): number => {
+  const parseNumber = (value: unknown): number => {
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
       // Remove commas and convert to number
@@ -528,10 +528,10 @@ function mapYearPopulation(input: unknown): Array<Record<string, any>> {
     return [];
   }
   
-  const mappedData = (input as any[]).map((row, i) => {
-    const yearValue = parseNumber((row as any)[yearKey]);
-    const indiaValue = parseNumber((row as any)[indiaKey]);
-    const worldValue = parseNumber((row as any)[worldKey]);
+  const mappedData = (input as Record<string, unknown>[]).map((row) => {
+    const yearValue = parseNumber(row[yearKey]);
+    const indiaValue = parseNumber(row[indiaKey]);
+    const worldValue = parseNumber(row[worldKey]);
     
     return {
       name: String(yearValue),
@@ -547,9 +547,9 @@ function mapYearPopulation(input: unknown): Array<Record<string, any>> {
 }
 
 function ChartView({ data, chartType, onHover }: { 
-  data: Array<Record<string, any>>, 
+  data: Array<Record<string, unknown>>, 
   chartType: 'line' | 'bar',
-  onHover: (data: Record<string, any> | null) => void 
+  onHover: (data: Record<string, unknown> | null) => void 
 }) {
   const padding = { top: 20, right: 20, bottom: 30, left: 40 };
   const width = 600;
@@ -558,19 +558,18 @@ function ChartView({ data, chartType, onHover }: {
   // Process population data for visualization
   const allKeys = new Set<string>();
   for (const row of data) Object.keys(row).forEach((k) => allKeys.add(k));
-  const numericKeys = Array.from(allKeys).filter((k) => k !== "name");
   
   // Look for simplified keys we created in mapYearPopulation
   const indiaKey = 'india';
   const worldKey = 'world';
 
-  const processedData = data.map((d, i) => {
-    const indiaValue = Number((d as any)[indiaKey] ?? 0);
-    const worldValue = Number((d as any)[worldKey] ?? 0);
+  const processedData = data.map((d, idx) => {
+    const indiaValue = Number((d as Record<string, unknown>)[indiaKey] ?? 0);
+    const worldValue = Number((d as Record<string, unknown>)[worldKey] ?? 0);
     
     // Keep original values for accurate visualization
     return {
-      name: (d as any).name || `Year ${i + 1}`,
+      name: (d as Record<string, unknown>).name || `Year ${idx + 1}`,
       value1: indiaValue,
       value2: worldValue,
       indiaOriginal: indiaValue,
@@ -998,7 +997,7 @@ function ChartView({ data, chartType, onHover }: {
   );
 }
 
-function MetricCards({ data, hoveredData }: { data: Array<Record<string, any>>, hoveredData: Record<string, any> | null }) {
+function MetricCards({ data, hoveredData }: { data: Array<Record<string, unknown>>, hoveredData: Record<string, unknown> | null }) {
   // Use simplified keys from mapYearPopulation
   const indiaKey = 'india';
   const worldKey = 'world';
@@ -1010,9 +1009,9 @@ function MetricCards({ data, hoveredData }: { data: Array<Record<string, any>>, 
   console.log('MetricCards - displayData:', displayData);
   console.log('MetricCards - available keys:', displayData ? Object.keys(displayData) : 'none');
   
-  const currentIndiaPopulation = displayData ? Number(displayData[indiaKey] ?? 0) : 0;
-  const currentWorldPopulation = displayData ? Number(displayData[worldKey] ?? 0) : 0;
-  const currentYear = displayData ? displayData.name : '';
+  const currentIndiaPopulation = displayData ? Number((displayData as Record<string, unknown>)[indiaKey] ?? 0) : 0;
+  const currentWorldPopulation = displayData ? Number((displayData as Record<string, unknown>)[worldKey] ?? 0) : 0;
+  const currentYear = displayData ? (displayData as Record<string, unknown>).name : '';
   
   console.log('MetricCards - india:', currentIndiaPopulation, 'world:', currentWorldPopulation, 'year:', currentYear);
   
@@ -1056,17 +1055,3 @@ function MetricCards({ data, hoveredData }: { data: Array<Record<string, any>>, 
   );
 }
 
-const SAMPLE_MONTH_PROFIT = [
-  { name: "January", Profit: 2145215 },
-  { name: "February", Profit: 235325 },
-  { name: "March", Profit: 3523 },
-  { name: "April", Profit: 1234 },
-  { name: "May", Profit: 532532 },
-  { name: "June", Profit: 14124521 },
-  { name: "July", Profit: 2152315 },
-  { name: "August", Profit: 32523 },
-  { name: "September", Profit: 23523 },
-  { name: "October", Profit: 23523 },
-  { name: "November", Profit: 23532 },
-  { name: "December", Profit: 2352 },
-];

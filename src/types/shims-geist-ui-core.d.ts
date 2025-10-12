@@ -3,6 +3,7 @@
 declare module "@geist-ui/core" {
   const GeistProvider: React.ComponentType<{ children?: React.ReactNode }>;
   const CssBaseline: React.ComponentType<Record<string, never>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Button: React.ComponentType<any>;
   export { GeistProvider, CssBaseline, Button };
 }
