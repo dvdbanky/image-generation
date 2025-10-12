@@ -198,7 +198,7 @@ export default function Galaxy({
 
   useEffect(() => {
     if (!ctnDom.current) return;
-    const ctn = ctnDom.current;
+    const ctn = ctnDom.current as HTMLDivElement;
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false,
