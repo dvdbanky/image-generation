@@ -264,7 +264,7 @@ export default function Galaxy({
     window.addEventListener('resize', resize, false);
     resize();
 
-    function update(t) {
+    function update(t: number) {
       animateId = requestAnimationFrame(update);
       if (!disableAnimation) {
         program.uniforms.uTime.value = t * 0.001;
