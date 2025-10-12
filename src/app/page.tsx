@@ -545,7 +545,7 @@ function mapYearPopulation(input: unknown): Array<Record<string, unknown>> {
   });
 
   // Sort by year in ascending order
-  const sorted = mappedData.sort((a, b) => a.sortValue - b.sortValue).map(({ sortValue, ...rest }) => rest);
+  const sorted = mappedData.sort((a, b) => a.sortValue - b.sortValue).map(({ sortValue: _, ...rest }) => rest);
   return sorted;
 }
 
@@ -1036,7 +1036,7 @@ function MetricCards({ data, hoveredData }: { data: Array<Record<string, unknown
           {formatPopulation(currentIndiaPopulation)}
         </div>
         <div className="text-gray-600">Население Индии</div>
-        {hoveredData && <div className="text-sm text-orange-500 mt-1">{currentYear} год</div>}
+        {hoveredData && <div className="text-sm text-orange-500 mt-1">{String(currentYear)} год</div>}
       </div>
       
       <div className={`bg-white p-6 rounded-lg shadow-md border text-center min-w-[180px] transition-all duration-300 ${hoveredData ? 'ring-2 ring-blue-200' : ''}`}>
@@ -1044,7 +1044,7 @@ function MetricCards({ data, hoveredData }: { data: Array<Record<string, unknown
           {formatPopulation(currentWorldPopulation)}
         </div>
         <div className="text-gray-600">Население мира</div>
-        {hoveredData && <div className="text-sm text-blue-500 mt-1">{currentYear} год</div>}
+        {hoveredData && <div className="text-sm text-blue-500 mt-1">{String(currentYear)} год</div>}
       </div>
       
       <div className={`bg-white p-6 rounded-lg shadow-md border text-center min-w-[180px] transition-all duration-300 ${hoveredData ? 'ring-2 ring-green-200' : ''}`}>
@@ -1052,7 +1052,7 @@ function MetricCards({ data, hoveredData }: { data: Array<Record<string, unknown
           {indiaWorldShare.toFixed(1)}%
         </div>
         <div className="text-gray-600">Доля Индии</div>
-        {hoveredData && <div className="text-sm text-green-500 mt-1">{currentYear} год</div>}
+        {hoveredData && <div className="text-sm text-green-500 mt-1">{String(currentYear)} год</div>}
       </div>
     </div>
   );
