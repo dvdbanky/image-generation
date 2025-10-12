@@ -538,14 +538,14 @@ function mapYearPopulation(input: unknown): Array<Record<string, unknown>> {
     
     return {
       name: String(yearValue),
-      _sortValue: yearValue,
+      sortValue: yearValue,
       india: indiaValue,
       world: worldValue
     };
   });
 
   // Sort by year in ascending order
-  const sorted = mappedData.sort((a, b) => a._sortValue - b._sortValue).map(({ _sortValue, ...rest }) => rest);
+  const sorted = mappedData.sort((a, b) => a.sortValue - b.sortValue).map(({ sortValue, ...rest }) => rest);
   return sorted;
 }
 
@@ -774,7 +774,7 @@ function ChartView({ data, chartType, onHover }: {
               const shouldShow = processedData.length <= 10 || i % Math.ceil(processedData.length / 8) === 0;
               return shouldShow ? (
                 <text key={i} x={xTo(i)} y={height - padding.bottom + 20}>
-                  {d.name}
+                  {String(d.name)}
                 </text>
               ) : null;
             })}
