@@ -192,7 +192,7 @@ export default function Home() {
       
       {/* Main content */}
       <main className="relative z-10 min-h-screen flex flex-col items-center justify-start p-8 gap-8 pt-16">
-        <h1 className="text-3xl font-bold text-white drop-shadow-lg" style={{color: '#f8fafc'}}>УЧЕБНЫЙ ПРОЕКТ!!!</h1>
+        <h1 className="text-3xl font-bold text-white drop-shadow-lg" style={{color: '#f8fafc'}}>УЧЕБНЫЙ ПРОЕКТ!</h1>
         
         {/* Charts Panel */}
         <div className="w-full max-w-4xl">
